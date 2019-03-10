@@ -1,0 +1,22 @@
+FROM debian:9
+MAINTAINER Arris Ray <arris.ray@gmail.com>
+
+ARG VIM_VERSION=vim80
+ARG BUILD_PACKAGES='apt-transport-https \
+    build-essential \
+    sudo git vim wget curl locales procps \
+    supervisor'
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -y \
+    && apt-get install -yq \
+        ${BUILD_PACKAGES} \
+    && apt-get clean \
+# System Locale
+    && locale-gen en_US.UTF-8 \
+        && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
+# Vim-Plug
+    && curl -fLo /usr/share/vim/${VIM_VERSION}/autoload/plug.vim --create-dirs \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
+# Install vim plugins
+    && vim +PlugInstall +qa 
+

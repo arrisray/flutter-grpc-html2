@@ -1,0 +1,37 @@
+FROM arris/android:latest
+MAINTAINER Arris Ray <arris.ray@gmail.com>
+
+ENV PATH="/opt/google/flutter/bin:/usr/lib/dart/bin:$HOME/.pub-cache/bin:${PATH}"
+
+RUN DEBIAN_FRONTEND=noninteractive \
+# Add Dart repos
+    curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list \
+# Install required packages
+    && apt-get update -y \
+        && apt-get install -yq \
+            unzip xz-utils \
+# https://github.com/flutter/flutter/issues/6207
+            lib32stdc++6 \
+# Dart SDK
+            dart \
+        && apt-get clean \
+# Install protobuf compiler
+    && mkdir -p /tmp/protobuf \
+        && wget -P /tmp/protobuf -nc https://github.com/protocolbuffers/protobuf/releases/download/v3.7.0/protoc-3.7.0-linux-x86_64.zip \
+        && cd /tmp/protobuf \
+        && unzip protoc-3.7.0-linux-x86_64.zip \
+        && mv bin/* ${GOPATH}/bin \
+        && mv include/* /usr/include \
+        && rm -rf /tmp/protobuf \
+# Install Flutter SDK
+    && mkdir -p /opt/google \
+        && wget -P /tmp/flutter -nc https://storage.googleapis.com/flutter_infra/releases/stable/linux/flutter_linux_v1.2.1-stable.tar.xz \
+        && cd /tmp/flutter \
+        && tar xvf flutter_linux_v1.2.1-stable.tar.xz \
+        && mv flutter /opt/google \
+# Install protoc
+    && pub global activate protoc_plugin 
+# Update Flutter dependencies
+#     && flutter packages get
+    
